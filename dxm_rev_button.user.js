@@ -55,16 +55,16 @@
 
             .dxm-revive-group--header {
                 margin: 2px 10px 0 0 !important; float: none !important; clear: none !important;
-                order: -1 !important; margin-right: auto !important; flex: 0 0 auto !important;
+                flex: 0 0 auto !important;
             }
             .dxm-revive-group--header .dxm-revive-main, .dxm-revive-group--header .dxm-revive-quick { height: 24px; }
             #dxm-revive-group-hospital { margin-right: 16px; }
 
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
-                margin: 0 auto 0 0 !important; align-self: center; vertical-align: middle;
+                margin: 0 10px 0 0 !important; align-self: center; vertical-align: middle;
                 float: none !important; clear: none !important; position: relative; top: -1px; left: 0 !important;
-                order: -1 !important; flex: 0 0 auto !important; margin-right: auto !important;
+                flex: 0 0 auto !important;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
                 float: none !important; clear: none !important;
@@ -183,9 +183,15 @@
     };
 
     const paintDots = () => {
-        const color = serviceOnline === true ? '#22c55e' : serviceOnline === false ? '#ef4444' : '#9ca3af';
-        const title = serviceOnline === true ? 'Revive service online'
-            : serviceOnline === false ? 'Revive service offline' : 'Revive service status unknown';
+        let color = '#9ca3af';
+        let title = 'Revive service status unknown';
+        if (serviceOnline === true) {
+            color = '#22c55e';
+            title = 'Revive service online';
+        } else if (serviceOnline === false) {
+            color = '#ef4444';
+            title = 'Revive service offline';
+        }
         document.querySelectorAll('.dxm-rev-dot').forEach((d) => {
             d.style.background = color;
             d.style.boxShadow = `0 0 6px ${color}`;
@@ -284,7 +290,7 @@
             document.body && (
                 document.body.classList.contains('tt-mobile') ||
                 document.body.classList.contains('mobile') ||
-                (document.body.dataset && document.body.dataset.layout === 'mobile')
+                document.body.dataset?.layout === 'mobile'
             )
         );
 
@@ -315,18 +321,19 @@
         }
 
         const desiredId = layoutMode === 'desktop' ? 'dxm-revive-group-faction' : 'dxm-revive-group-mobilebar';
-        if (!document.getElementById(desiredId)) {
-            const group = makeGroup(desiredId, layoutMode === 'desktop' ? 'header' : 'mobilebar');
-            const insertionCandidates = Array.from(anchor.children).filter(
-                (el) => !el.id || !el.id.startsWith('dxm-revive-group-')
-            );
-            const insertTarget = insertionCandidates[0] || null;
-            if (insertTarget) {
-                anchor.insertBefore(group, insertTarget);
-            } else {
-                anchor.appendChild(group);
-            }
+        const insertionTarget = Array.from(anchor.children).find((el) => el.classList?.contains('clear')) || null;
+        let group = document.getElementById(desiredId);
+        if (!group) {
+            group = makeGroup(desiredId, layoutMode === 'desktop' ? 'header' : 'mobilebar');
             refreshStatus();
+        }
+
+        if (insertionTarget) {
+            if (group.nextElementSibling !== insertionTarget) {
+                insertionTarget.before(group);
+            }
+        } else if (group.parentElement !== anchor) {
+            anchor.appendChild(group);
         }
 
         paintDots();
@@ -419,9 +426,9 @@
         // Payment type is a toggle (Xanax <-> Cash); the price is derived from the
         // skill — 2 for Full (100%), 1 for Any / At least 75%. DX members get the
         // perk: half price, cash only (set once the member check returns).
-        let payType = (saved && saved.type) === "Cash" ? "Cash" : "Xanax";
+        let payType = saved?.type === "Cash" ? "Cash" : "Xanax";
         let perkMode = false;
-        if (saved && saved.skill) skillS.value = saved.skill;
+        if (saved?.skill) skillS.value = saved.skill;
 
         const priceFor = () => {
             if (perkMode) return skillS.value === "Full (100%)" ? "1m" : "500k";
