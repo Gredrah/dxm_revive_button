@@ -59,11 +59,13 @@
 
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
-                margin: 6px 8px 6px 0 !important; align-self: center; vertical-align: middle; float: left !important;
+                margin: 2px 8px 0 0 !important; align-self: center; vertical-align: middle; float: left !important;
+                position: relative; top: -1px;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
                 height: 20px !important; min-width: 0 !important; justify-content: center; padding: 0 10px 0 8px !important;
                 gap: 4px; border-radius: 999px !important; font-size: 9px; line-height: 1;
+                transform: translateY(-1px);
             }
             .dxm-revive-group--mobilebar .dxm-rev-logo { height: 10px !important; max-width: 14px !important; }
             .dxm-revive-group--mobilebar .dxm-rev-txt { display: none !important; }
@@ -226,19 +228,28 @@
         group.className = `dxm-revive-group dxm-revive-group--${variant}`;
 
         const main = document.createElement('button');
+        main.type = 'button';
         main.className = 'dxm-revive-main';
         main.innerHTML = variant === 'mobilebar'
             ? `<img class="dxm-rev-logo" src="${DXM_LOGO}" alt=""><span class="dxm-rev-dot"></span>`
             : `<img class="dxm-rev-logo" src="${DXM_LOGO}" alt=""><span class="dxm-rev-txt">DXM Revive</span><span class="dxm-rev-dot"></span>`;
-        main.addEventListener('click', (e) => { e.preventDefault(); handleMainClick(); });
-
+        main.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMainClick();
+        });
         group.appendChild(main);
 
         if (variant !== 'mobilebar') {
             const quick = document.createElement('button');
+            quick.type = 'button';
             quick.className = 'dxm-revive-quick';
             quick.textContent = '»';
-            quick.addEventListener('click', (e) => { e.preventDefault(); handleQuickClick(); });
+            quick.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleQuickClick();
+            });
             group.appendChild(quick);
         }
 
@@ -278,41 +289,38 @@
 
     const injectButtons = () => {
         injectStyles();
-        let added = false;
-
-        const existingMobile = document.getElementById('dxm-revive-group-mobilebar');
-        const existingDesktop = document.getElementById('dxm-revive-group-faction');
-        existingMobile?.remove();
-        existingDesktop?.remove();
 
         const layoutMode = getLayoutMode();
         const anchor = findContentBarAnchor();
 
-        if (anchor && layoutMode === 'desktop' && !document.getElementById('dxm-revive-group-faction')) {
-            const group = makeGroup('dxm-revive-group-faction', 'header');
-            const insertTarget = anchor.firstElementChild || null;
-            if (insertTarget) {
-                anchor.insertBefore(group, insertTarget);
-            } else {
-                anchor.appendChild(group);
-            }
-            added = true;
+        const existingMobile = document.getElementById('dxm-revive-group-mobilebar');
+        const existingDesktop = document.getElementById('dxm-revive-group-faction');
+        if (layoutMode === 'desktop') {
+            existingMobile?.remove();
+        } else {
+            existingDesktop?.remove();
         }
 
-        if (anchor && layoutMode === 'mobile' && !document.getElementById('dxm-revive-group-mobilebar')) {
-            const group = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
+        if (!anchor) {
+            paintDots();
+            paintQuickTips();
+            return;
+        }
+
+        const desiredId = layoutMode === 'desktop' ? 'dxm-revive-group-faction' : 'dxm-revive-group-mobilebar';
+        if (!document.getElementById(desiredId)) {
+            const group = makeGroup(desiredId, layoutMode === 'desktop' ? 'header' : 'mobilebar');
             const insertTarget = anchor.firstElementChild || null;
             if (insertTarget) {
-                anchor.insertBefore(group, insertTarget);
+                insertTarget.before(group);
             } else {
                 anchor.appendChild(group);
             }
-            added = true;
+            refreshStatus();
         }
 
         paintDots();
         paintQuickTips();
-        if (added) refreshStatus();
     };
 
     // Torn's faction/war nav re-renders live (war status ticks, ajax nav), which
@@ -460,7 +468,7 @@
         applyStatus(serviceOnline);
         fetchServiceStatus((online) => { serviceOnline = online; paintDots(); applyStatus(online); });
 
-        const closeModal = () => { if (overlay.isConnected) document.body.removeChild(overlay); };
+        const closeModal = () => { if (overlay.isConnected) overlay.remove(); };
 
         sendBtn.onclick = () => {
             if (sendBtn.disabled) return;
