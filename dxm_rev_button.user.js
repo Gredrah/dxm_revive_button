@@ -2,7 +2,6 @@
 // @name         DX Medical Revive Request Button
 // @namespace    http://tampermonkey.net/
 // @version      1.9.0
-// @author       YazanZed [3258052]
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
@@ -83,11 +82,6 @@
             .dxm-rev-logo {
                 height: 15px !important; width: auto !important; max-width: 22px !important; max-height: 100% !important;
                 object-fit: contain; display: block; opacity: .95; flex-shrink: 0; vertical-align: middle;
-            }
-            /* The Hospital and faction-page header buttons are redundant on
-               mobile now that the mobile info-bar pill covers every page. */
-            @media (max-width: 784px) {
-                #dxm-revive-group-hospital, #dxm-revive-group-faction { display: none !important; }
             }
             .dxm-rev-dot { width: 8px; height: 8px; border-radius: 999px; background: #9ca3af; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,.55); box-sizing: content-box; }
 
@@ -272,12 +266,41 @@
             added = true;
         }
 
-        // Class names here are CSS-modules hashes that rotate on Torn deploys
-        // (e.g. userInformationMobile___Aznrv), so match the stable prefix only
-        // — same convention as the account-links-wrap selector above.
-        const mobileInfoBar = document.querySelector('div[class^="userInformationMobile___"]');
+        const findMobileInjectAnchor = () => {
+            const selectors = [
+                'div[class*="userInformationMobile"]',
+                'div[class*="userInfoMobile"]',
+                'div[class*="mobileInfo"]',
+                'header',
+                'main',
+                'body'
+            ];
+
+            for (const selector of selectors) {
+                const match = document.querySelector(selector);
+                if (match) return match;
+            }
+            return null;
+        };
+
+        const mobileInfoBar = findMobileInjectAnchor();
         if (mobileInfoBar && !document.getElementById('dxm-revive-group-mobilebar')) {
-            mobileInfoBar.insertAdjacentElement('afterend', makeGroup('dxm-revive-group-mobilebar', 'mobilebar'));
+            const mobileGroup = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
+
+            if (mobileInfoBar.matches('header, main, body')) {
+                if (mobileInfoBar === document.body) {
+                    mobileInfoBar.appendChild(mobileGroup);
+                } else if (mobileInfoBar.firstElementChild) {
+                    mobileInfoBar.insertBefore(mobileGroup, mobileInfoBar.firstElementChild);
+                } else {
+                    mobileInfoBar.appendChild(mobileGroup);
+                }
+            } else if (mobileInfoBar.nextElementSibling) {
+                mobileInfoBar.parentNode.insertBefore(mobileGroup, mobileInfoBar.nextElementSibling);
+            } else if (mobileInfoBar.parentNode) {
+                mobileInfoBar.parentNode.appendChild(mobileGroup);
+            }
+
             added = true;
         }
 
