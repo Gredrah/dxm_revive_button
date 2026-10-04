@@ -18,7 +18,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_VERSION = "1.9.0";
+    const SCRIPT_VERSION = "1.9.1";
     const CONFIG_KEY = "dxm_revive_config";
     const API_BASE = "https://divisonx.com/api/dashboard/revive";
 
