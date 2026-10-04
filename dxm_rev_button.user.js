@@ -59,17 +59,14 @@
 
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
-                margin: 6px auto; align-self: center;
+                margin: 6px 8px 6px 0 !important; align-self: center; vertical-align: middle; float: left !important;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
-                justify-content: center; height: 20px; font-size: 9px; padding: 0 7px !important; gap: 3px;
-                border-radius: 999px 0 0 999px !important;
-            }
-            .dxm-revive-group--mobilebar .dxm-revive-quick {
-                height: 20px; padding: 0 7px !important; font-size: 10px;
-                border-radius: 0 999px 999px 0 !important;
+                height: 20px !important; min-width: 0 !important; justify-content: center; padding: 0 10px 0 8px !important;
+                gap: 4px; border-radius: 999px !important; font-size: 9px; line-height: 1;
             }
             .dxm-revive-group--mobilebar .dxm-rev-logo { height: 10px !important; max-width: 14px !important; }
+            .dxm-revive-group--mobilebar .dxm-rev-txt { display: none !important; }
             .dxm-revive-group--mobilebar .dxm-rev-dot { width: 6px; height: 6px; }
 
             .dxm-rev-logo {
@@ -230,27 +227,31 @@
 
         const main = document.createElement('button');
         main.className = 'dxm-revive-main';
-        main.innerHTML = `<img class="dxm-rev-logo" src="${DXM_LOGO}" alt=""><span class="dxm-rev-txt">DXM Revive</span><span class="dxm-rev-dot"></span>`;
+        main.innerHTML = variant === 'mobilebar'
+            ? `<img class="dxm-rev-logo" src="${DXM_LOGO}" alt=""><span class="dxm-rev-dot"></span>`
+            : `<img class="dxm-rev-logo" src="${DXM_LOGO}" alt=""><span class="dxm-rev-txt">DXM Revive</span><span class="dxm-rev-dot"></span>`;
         main.addEventListener('click', (e) => { e.preventDefault(); handleMainClick(); });
 
-        const quick = document.createElement('button');
-        quick.className = 'dxm-revive-quick';
-        quick.textContent = '»';
-        quick.addEventListener('click', (e) => { e.preventDefault(); handleQuickClick(); });
-
         group.appendChild(main);
-        group.appendChild(quick);
+
+        if (variant !== 'mobilebar') {
+            const quick = document.createElement('button');
+            quick.className = 'dxm-revive-quick';
+            quick.textContent = '»';
+            quick.addEventListener('click', (e) => { e.preventDefault(); handleQuickClick(); });
+            group.appendChild(quick);
+        }
+
         return group;
     };
 
-    const getTornMobileAnchor = () => {
+    const findContentBarAnchor = () => {
         const selectors = [
-            'div[class*="userInformationMobile"]',
-            'div[class*="userInfoMobile"]',
-            'div[class*="mobileInfo"]',
-            '[class*="userInformationMobile"]',
-            '[class*="userInfoMobile"]',
-            '[class*="mobileInfo"]'
+            '#top-page-links-list',
+            '.content-title-links',
+            '.links-top-wrap',
+            '.view-wars',
+            '.revive-availability-btn'
         ];
 
         for (const selector of selectors) {
@@ -260,32 +261,18 @@
         return null;
     };
 
-    const findDesktopInsertAnchor = () => {
-        const warfareLink = document.querySelector('.view-wars');
-        if (warfareLink) return warfareLink;
-
-        const reviveLink = document.querySelector('.revive-availability-btn');
-        if (reviveLink) return reviveLink;
-
-        const topLinksList = document.getElementById('top-page-links-list');
-        if (topLinksList) return topLinksList.firstElementChild || topLinksList;
-
-        return null;
-    };
-
     const getLayoutMode = () => {
-        const mobileAnchor = getTornMobileAnchor();
-        if (mobileAnchor) return 'mobile';
+        const mobileShellSignal = !!(
+            document.body && (
+                document.body.classList.contains('tt-mobile') ||
+                document.body.classList.contains('mobile') ||
+                (document.body.dataset && document.body.dataset.layout === 'mobile')
+            )
+        );
 
         const ratio = window.innerWidth / Math.max(window.innerHeight, 1);
-        const desktopSignals = !!(
-            document.getElementById('top-page-links-list') ||
-            document.querySelector('.view-wars') ||
-            document.querySelector('.revive-availability-btn') ||
-            document.querySelector('.content-title-links')
-        );
-        if (desktopSignals || ratio > 1.15) return 'desktop';
-        if (ratio <= 1.15 && (document.querySelector('header') || document.querySelector('main'))) return 'mobile';
+        if (mobileShellSignal || ratio <= 1.15 || window.innerWidth <= 768) return 'mobile';
+
         return 'desktop';
     };
 
@@ -293,38 +280,34 @@
         injectStyles();
         let added = false;
 
-        document.getElementById('dxm-revive-group-mobilebar')?.remove();
+        const existingMobile = document.getElementById('dxm-revive-group-mobilebar');
+        const existingDesktop = document.getElementById('dxm-revive-group-faction');
+        existingMobile?.remove();
+        existingDesktop?.remove();
 
         const layoutMode = getLayoutMode();
+        const anchor = findContentBarAnchor();
 
-        if (layoutMode === 'desktop') {
-            const desktopAnchor = findDesktopInsertAnchor();
-            if (desktopAnchor && !document.getElementById('dxm-revive-group-faction')) {
-                const group = makeGroup('dxm-revive-group-faction', 'header');
-                if (desktopAnchor.parentNode) {
-                    desktopAnchor.parentNode.insertBefore(group, desktopAnchor);
-                    added = true;
-                }
+        if (anchor && layoutMode === 'desktop' && !document.getElementById('dxm-revive-group-faction')) {
+            const group = makeGroup('dxm-revive-group-faction', 'header');
+            const insertTarget = anchor.firstElementChild || null;
+            if (insertTarget) {
+                anchor.insertBefore(group, insertTarget);
+            } else {
+                anchor.appendChild(group);
             }
+            added = true;
         }
 
-        if (layoutMode === 'mobile') {
-            const mobileInfoBar = getTornMobileAnchor();
-            if (mobileInfoBar && !document.getElementById('dxm-revive-group-mobilebar')) {
-                const mobileGroup = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
-                if (mobileInfoBar.nextElementSibling) {
-                    mobileInfoBar.parentNode.insertBefore(mobileGroup, mobileInfoBar.nextElementSibling);
-                } else if (mobileInfoBar.parentNode) {
-                    mobileInfoBar.parentNode.appendChild(mobileGroup);
-                } else {
-                    mobileInfoBar.appendChild(mobileGroup);
-                }
-                added = true;
+        if (anchor && layoutMode === 'mobile' && !document.getElementById('dxm-revive-group-mobilebar')) {
+            const group = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
+            const insertTarget = anchor.firstElementChild || null;
+            if (insertTarget) {
+                anchor.insertBefore(group, insertTarget);
+            } else {
+                anchor.appendChild(group);
             }
-        }
-
-        if (layoutMode === 'desktop') {
-            document.getElementById('dxm-revive-group-mobilebar')?.remove();
+            added = true;
         }
 
         paintDots();
