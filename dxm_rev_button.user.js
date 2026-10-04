@@ -55,28 +55,21 @@
 
             .dxm-revive-group--header { margin-right: 10px; margin-top: 2px; float: left !important; }
             .dxm-revive-group--header .dxm-revive-main, .dxm-revive-group--header .dxm-revive-quick { height: 24px; }
-            /* Sits directly before the revive-status link on the Hospital page
-               (same beforebegin pattern as the faction page's instance below);
-               a bit more breathing room than the shared 10px default since it
-               now sits right against that link's icon. */
             #dxm-revive-group-hospital { margin-right: 16px; }
 
-            /* Sits centered directly under the mobile top info bar
-               (energy/nerve/.../money/points row) — same left/right split
-               layout as the desktop header button, just smaller and centered
-               instead of stretched full width. display:flex (not inline-flex)
-               makes this a block-level box, so margin:auto centers it. */
             .dxm-revive-group--mobilebar {
-                display: flex !important; width: max-content !important;
-                margin: 6px auto;
+                display: inline-flex !important; width: max-content !important;
+                margin: 6px auto; align-self: center;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
-                justify-content: center; height: 22px; font-size: 10px; padding: 0 8px !important; gap: 4px;
+                justify-content: center; height: 20px; font-size: 9px; padding: 0 7px !important; gap: 3px;
+                border-radius: 999px 0 0 999px !important;
             }
             .dxm-revive-group--mobilebar .dxm-revive-quick {
-                height: 22px; padding: 0 8px !important; font-size: 11px;
+                height: 20px; padding: 0 7px !important; font-size: 10px;
+                border-radius: 0 999px 999px 0 !important;
             }
-            .dxm-revive-group--mobilebar .dxm-rev-logo { height: 11px !important; max-width: 16px !important; }
+            .dxm-revive-group--mobilebar .dxm-rev-logo { height: 10px !important; max-width: 14px !important; }
             .dxm-revive-group--mobilebar .dxm-rev-dot { width: 6px; height: 6px; }
 
             .dxm-rev-logo {
@@ -250,58 +243,88 @@
         return group;
     };
 
+    const getTornMobileAnchor = () => {
+        const selectors = [
+            'div[class*="userInformationMobile"]',
+            'div[class*="userInfoMobile"]',
+            'div[class*="mobileInfo"]',
+            '[class*="userInformationMobile"]',
+            '[class*="userInfoMobile"]',
+            '[class*="mobileInfo"]'
+        ];
+
+        for (const selector of selectors) {
+            const match = document.querySelector(selector);
+            if (match) return match;
+        }
+        return null;
+    };
+
+    const findDesktopInsertAnchor = () => {
+        const warfareLink = document.querySelector('.view-wars');
+        if (warfareLink) return warfareLink;
+
+        const reviveLink = document.querySelector('.revive-availability-btn');
+        if (reviveLink) return reviveLink;
+
+        const topLinksList = document.getElementById('top-page-links-list');
+        if (topLinksList) return topLinksList.firstElementChild || topLinksList;
+
+        return null;
+    };
+
+    const getLayoutMode = () => {
+        const mobileAnchor = getTornMobileAnchor();
+        if (mobileAnchor) return 'mobile';
+
+        const ratio = window.innerWidth / Math.max(window.innerHeight, 1);
+        const desktopSignals = !!(
+            document.getElementById('top-page-links-list') ||
+            document.querySelector('.view-wars') ||
+            document.querySelector('.revive-availability-btn') ||
+            document.querySelector('.content-title-links')
+        );
+        if (desktopSignals || ratio > 1.15) return 'desktop';
+        if (ratio <= 1.15 && (document.querySelector('header') || document.querySelector('main'))) return 'mobile';
+        return 'desktop';
+    };
+
     const injectButtons = () => {
         injectStyles();
         let added = false;
 
-        const reviveLink = document.querySelector('.revive-availability-btn');
-        if (reviveLink && !document.getElementById('dxm-revive-group-hospital')) {
-            reviveLink.insertAdjacentElement('beforebegin', makeGroup('dxm-revive-group-hospital', 'header'));
-            added = true;
-        }
+        document.getElementById('dxm-revive-group-mobilebar')?.remove();
 
-        const warfareLink = document.querySelector('.view-wars');
-        if (warfareLink && !document.getElementById('dxm-revive-group-faction')) {
-            warfareLink.insertAdjacentElement('beforebegin', makeGroup('dxm-revive-group-faction', 'header'));
-            added = true;
-        }
+        const layoutMode = getLayoutMode();
 
-        const findMobileInjectAnchor = () => {
-            const selectors = [
-                'div[class*="userInformationMobile"]',
-                'div[class*="userInfoMobile"]',
-                'div[class*="mobileInfo"]',
-                'header',
-                'main',
-                'body'
-            ];
-
-            for (const selector of selectors) {
-                const match = document.querySelector(selector);
-                if (match) return match;
+        if (layoutMode === 'desktop') {
+            const desktopAnchor = findDesktopInsertAnchor();
+            if (desktopAnchor && !document.getElementById('dxm-revive-group-faction')) {
+                const group = makeGroup('dxm-revive-group-faction', 'header');
+                if (desktopAnchor.parentNode) {
+                    desktopAnchor.parentNode.insertBefore(group, desktopAnchor);
+                    added = true;
+                }
             }
-            return null;
-        };
+        }
 
-        const mobileInfoBar = findMobileInjectAnchor();
-        if (mobileInfoBar && !document.getElementById('dxm-revive-group-mobilebar')) {
-            const mobileGroup = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
-
-            if (mobileInfoBar.matches('header, main, body')) {
-                if (mobileInfoBar === document.body) {
-                    mobileInfoBar.appendChild(mobileGroup);
-                } else if (mobileInfoBar.firstElementChild) {
-                    mobileInfoBar.insertBefore(mobileGroup, mobileInfoBar.firstElementChild);
+        if (layoutMode === 'mobile') {
+            const mobileInfoBar = getTornMobileAnchor();
+            if (mobileInfoBar && !document.getElementById('dxm-revive-group-mobilebar')) {
+                const mobileGroup = makeGroup('dxm-revive-group-mobilebar', 'mobilebar');
+                if (mobileInfoBar.nextElementSibling) {
+                    mobileInfoBar.parentNode.insertBefore(mobileGroup, mobileInfoBar.nextElementSibling);
+                } else if (mobileInfoBar.parentNode) {
+                    mobileInfoBar.parentNode.appendChild(mobileGroup);
                 } else {
                     mobileInfoBar.appendChild(mobileGroup);
                 }
-            } else if (mobileInfoBar.nextElementSibling) {
-                mobileInfoBar.parentNode.insertBefore(mobileGroup, mobileInfoBar.nextElementSibling);
-            } else if (mobileInfoBar.parentNode) {
-                mobileInfoBar.parentNode.appendChild(mobileGroup);
+                added = true;
             }
+        }
 
-            added = true;
+        if (layoutMode === 'desktop') {
+            document.getElementById('dxm-revive-group-mobilebar')?.remove();
         }
 
         paintDots();
