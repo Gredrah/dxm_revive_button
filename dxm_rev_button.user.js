@@ -53,20 +53,26 @@
                 box-shadow: inset 0 2px 4px rgba(0,0,0,.4) !important; transform: translateY(1px);
             }
 
-            .dxm-revive-group--header { margin-right: 10px; margin-top: 2px; float: left !important; }
+            .dxm-revive-group--header {
+                margin: 2px 10px 0 0 !important; float: none !important; clear: none !important;
+                order: -1 !important; margin-right: auto !important; flex: 0 0 auto !important;
+            }
             .dxm-revive-group--header .dxm-revive-main, .dxm-revive-group--header .dxm-revive-quick { height: 24px; }
             #dxm-revive-group-hospital { margin-right: 16px; }
 
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
-                margin: 0 8px 0 0 !important; align-self: center; vertical-align: middle;
-                float: none !important; clear: none !important; position: relative; top: -1px;
+                margin: 0 auto 0 0 !important; align-self: center; vertical-align: middle;
+                float: none !important; clear: none !important; position: relative; top: -1px; left: 0 !important;
+                order: -1 !important; flex: 0 0 auto !important; margin-right: auto !important;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
                 float: none !important; clear: none !important;
                 height: 20px !important; min-width: 0 !important; justify-content: center; padding: 0 10px 0 8px !important;
                 gap: 4px; border-radius: 999px !important; font-size: 9px; line-height: 1;
                 transform: translateY(-1px);
+                position: relative; left: 0;
+                margin-left: 0 !important; margin-right: 0 !important;
             }
             .dxm-revive-group--mobilebar .dxm-rev-logo { height: 10px !important; max-width: 14px !important; }
             .dxm-revive-group--mobilebar .dxm-rev-txt { display: none !important; }
