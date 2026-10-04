@@ -11,8 +11,8 @@
 // @grant        GM_registerMenuCommand
 // @connect      divisonx.com
 // @license      MIT
-// @downloadURL https://update.greasyfork.org/scripts/558696/DX%20Medical%20Revive%20Request%20Button.user.js
-// @updateURL https://update.greasyfork.org/scripts/558696/DX%20Medical%20Revive%20Request%20Button.meta.js
+// @downloadURL https://update.greasyfork.org/scripts/598649/DX%20Medical%20Revive%20Request%20Button.user.js
+// @updateURL https://update.greasyfork.org/scripts/598649/DX%20Medical%20Revive%20Request%20Button.meta.js
 // ==/UserScript==
 
 (function () {
