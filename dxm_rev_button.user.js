@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DX Medical Revive Request Button
 // @namespace    http://tampermonkey.net/
-// @version      1.9.2
+// @version      1.9.3
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
@@ -18,7 +18,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_VERSION = "1.9.2";
+    const SCRIPT_VERSION = "1.9.3";
     const CONFIG_KEY = "dxm_revive_config";
     const API_BASE = "https://divisonx.com/api/dashboard/revive";
 
@@ -29,6 +29,8 @@
     const YELLOW_BORDER = "#c98f10";
 
     let serviceOnline = null;
+    let dxMemberCache = null;
+    const registerMenuCommand = typeof GM_registerMenuCommand === 'function' ? GM_registerMenuCommand : null;
 
     const injectStyles = () => {
         if (document.getElementById('dxm-revive-styles')) return;
@@ -371,16 +373,18 @@
     refreshStatus();
     setInterval(refreshStatus, 30000);
 
-    GM_registerMenuCommand("DXM: Set / change API key", () => {
-        const current = GM_getValue("torn_api_key", "");
-        const next = prompt("Enter your Torn PUBLIC API key:", current || "");
-        if (next) { GM_setValue("torn_api_key", next); toast("DXM API key saved", true); }
-    });
-    GM_registerMenuCommand("DXM: Clear saved quick request", () => {
-        GM_setValue(CONFIG_KEY, null);
-        paintQuickTips();
-        toast("Saved quick request cleared", true);
-    });
+    if (registerMenuCommand) {
+        registerMenuCommand("DXM: Set / change API key", () => {
+            const current = GM_getValue("torn_api_key", "");
+            const next = prompt("Enter your Torn PUBLIC API key:", current || "");
+            if (next) { GM_setValue("torn_api_key", next); toast("DXM API key saved", true); }
+        });
+        registerMenuCommand("DXM: Clear saved quick request", () => {
+            GM_setValue(CONFIG_KEY, null);
+            paintQuickTips();
+            toast("Saved quick request cleared", true);
+        });
+    }
 
     function showPriceModal(apiKey) {
         injectStyles();
@@ -560,7 +564,6 @@
         });
     }
 
-    let dxMemberCache = null;
     function checkMembership(apiKey, cb) {
         if (dxMemberCache !== null) { cb(dxMemberCache); return; }
         GM_xmlhttpRequest({
