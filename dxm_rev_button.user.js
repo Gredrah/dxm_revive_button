@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DX Medical Revive Request Button
 // @namespace    http://tampermonkey.net/
-// @version      1.9.1
+// @version      1.9.0
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
@@ -18,7 +18,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_VERSION = "1.9.1";
+    const SCRIPT_VERSION = "1.9.0";
     const CONFIG_KEY = "dxm_revive_config";
     const API_BASE = "https://divisonx.com/api/dashboard/revive";
 
@@ -158,24 +158,6 @@
             .dxm-rev-btn2-primary:disabled { opacity: .5; cursor: not-allowed; }
             .dxm-rev-btn2-ghost { background: transparent; color: #9ca3af; }
             .dxm-rev-btn2-ghost:hover { color: #e5e7eb; }
-
-            @media (max-width: 768px), (pointer: coarse) {
-                .dxm-rev-actions {
-                    position: static;
-                    bottom: auto;
-                    margin: 0 -20px -20px;
-                    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
-                    flex-wrap: wrap;
-                }
-                .dxm-rev-btn2 {
-                    min-height: 40px;
-                    touch-action: manipulation;
-                    -webkit-tap-highlight-color: transparent;
-                }
-                .dxm-rev-btn2-ghost {
-                    flex: 1 1 110px;
-                }
-            }
 
             .dxm-rev-toast {
                 position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 12px);
@@ -514,7 +496,13 @@
         applyStatus(serviceOnline);
         fetchServiceStatus((online) => { serviceOnline = online; paintDots(); applyStatus(online); });
 
-        const closeModal = () => { if (overlay.isConnected) overlay.remove(); };
+        const closeModal = () => {
+            if (typeof overlay.remove === 'function') {
+                overlay.remove();
+                return;
+            }
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        };
 
         sendBtn.onclick = () => {
             if (sendBtn.disabled) return;
