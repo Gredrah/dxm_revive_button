@@ -59,10 +59,11 @@
 
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
-                margin: 2px 8px 0 0 !important; align-self: center; vertical-align: middle; float: left !important;
-                position: relative; top: -1px;
+                margin: 0 8px 0 0 !important; align-self: center; vertical-align: middle;
+                float: none !important; clear: none !important; position: relative; top: -1px;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
+                float: none !important; clear: none !important;
                 height: 20px !important; min-width: 0 !important; justify-content: center; padding: 0 10px 0 8px !important;
                 gap: 4px; border-radius: 999px !important; font-size: 9px; line-height: 1;
                 transform: translateY(-1px);
@@ -310,9 +311,12 @@
         const desiredId = layoutMode === 'desktop' ? 'dxm-revive-group-faction' : 'dxm-revive-group-mobilebar';
         if (!document.getElementById(desiredId)) {
             const group = makeGroup(desiredId, layoutMode === 'desktop' ? 'header' : 'mobilebar');
-            const insertTarget = anchor.firstElementChild || null;
+            const insertionCandidates = Array.from(anchor.children).filter(
+                (el) => !el.id || !el.id.startsWith('dxm-revive-group-')
+            );
+            const insertTarget = insertionCandidates[0] || null;
             if (insertTarget) {
-                insertTarget.before(group);
+                anchor.insertBefore(group, insertTarget);
             } else {
                 anchor.appendChild(group);
             }
