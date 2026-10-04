@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DX Medical Revive Request Button
 // @namespace    http://tampermonkey.net/
-// @version      1.9.0
+// @version      1.9.1
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
