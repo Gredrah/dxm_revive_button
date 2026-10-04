@@ -54,7 +54,7 @@
             }
 
             .dxm-revive-group--header {
-                margin: 2px 10px 0 0 !important; float: none !important; clear: none !important;
+                margin: 2px 10px 0 0 !important; float: left !important; clear: none !important;
                 flex: 0 0 auto !important;
             }
             .dxm-revive-group--header .dxm-revive-main, .dxm-revive-group--header .dxm-revive-quick { height: 24px; }
@@ -63,7 +63,7 @@
             .dxm-revive-group--mobilebar {
                 display: inline-flex !important; width: max-content !important;
                 margin: 0 10px 0 0 !important; align-self: center; vertical-align: middle;
-                float: none !important; clear: none !important; position: relative; top: -1px; left: 0 !important;
+                float: left !important; clear: none !important; position: relative; top: -1px; left: 0 !important;
                 flex: 0 0 auto !important;
             }
             .dxm-revive-group--mobilebar .dxm-revive-main {
@@ -321,7 +321,18 @@
         }
 
         const desiredId = layoutMode === 'desktop' ? 'dxm-revive-group-faction' : 'dxm-revive-group-mobilebar';
-        const insertionTarget = Array.from(anchor.children).find((el) => el.classList?.contains('clear')) || null;
+        const insertionTarget = Array.from(anchor.children).find((el) => {
+            if (!el) return false;
+            if (el.id?.startsWith('dxm-revive-group-')) return false;
+            if (el.id === 'dragon-heart-monitor-btn') return false;
+            if (el.classList?.contains('clear')) return false;
+            return el.classList?.contains('revive-availability-btn') ||
+                el.classList?.contains('city') ||
+                el.classList?.contains('tutorial-switcher') ||
+                el.classList?.contains('tt-revive') ||
+                el.tagName === 'A' ||
+                el.tagName === 'BUTTON';
+        }) || null;
         let group = document.getElementById(desiredId);
         if (!group) {
             group = makeGroup(desiredId, layoutMode === 'desktop' ? 'header' : 'mobilebar');
