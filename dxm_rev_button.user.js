@@ -159,6 +159,24 @@
             .dxm-rev-btn2-ghost { background: transparent; color: #9ca3af; }
             .dxm-rev-btn2-ghost:hover { color: #e5e7eb; }
 
+            @media (max-width: 768px), (pointer: coarse) {
+                .dxm-rev-actions {
+                    position: static;
+                    bottom: auto;
+                    margin: 0 -20px -20px;
+                    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+                    flex-wrap: wrap;
+                }
+                .dxm-rev-btn2 {
+                    min-height: 40px;
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
+                }
+                .dxm-rev-btn2-ghost {
+                    flex: 1 1 110px;
+                }
+            }
+
             .dxm-rev-toast {
                 position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 12px);
                 padding: 10px 16px; border-radius: 999px; z-index: 2147483647; opacity: 0;
