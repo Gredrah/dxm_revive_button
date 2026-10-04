@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DX Medical Revive Request Button
 // @namespace    http://tampermonkey.net/
-// @version      1.9.0
+// @version      1.9.2
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
@@ -18,7 +18,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_VERSION = "1.9.0";
+    const SCRIPT_VERSION = "1.9.2";
     const CONFIG_KEY = "dxm_revive_config";
     const API_BASE = "https://divisonx.com/api/dashboard/revive";
 
