@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DX Medical Revive Request Button
 // @namespace    https://www.github.com/gredrah
-// @version      1.9.4
+// @version      1.9.5
 // @author       gredra [1996198]
 // @description  Branded DX Medical (DXM) revive request button for Torn
 // @match        https://www.torn.com/*
@@ -18,7 +18,7 @@
 (function () {
     'use strict';
 
-    const SCRIPT_VERSION = "1.9.3";
+    const SCRIPT_VERSION = "1.9.5";
     const CONFIG_KEY = "dxm_revive_config";
     const API_BASE = "https://divisonx.com/api/dashboard/revive";
 
@@ -233,7 +233,10 @@
         if (!apiKey) return;
         const cfg = GM_getValue(CONFIG_KEY, null);
         if (!cfg) { showPriceModal(apiKey); return; }
-        if (serviceOnline === false) { toast("DXM revive service is offline", false); return; }
+        if (serviceOnline !== true) {
+            toast(serviceOnline === false ? "DXM revive service is offline" : "DXM revive service status is unknown", false);
+            return;
+        }
         sendToController(cfg, apiKey);
     };
 
@@ -494,7 +497,8 @@
                 statusTxt.textContent = "Offline";
                 sendBtn.disabled = true;
             } else {
-                statusTxt.textContent = "Unknown";
+                statusTxt.textContent = "Checking...";
+                sendBtn.disabled = true;
             }
         };
         applyStatus(serviceOnline);
